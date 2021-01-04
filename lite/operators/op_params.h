@@ -17,6 +17,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+
 #include "lite/api/paddle_place.h"
 #include "lite/core/scope.h"
 #include "lite/core/tensor.h"
@@ -2043,6 +2044,12 @@ struct FlattenContiguousRangeParam : ParamBase {
   lite::Tensor* xshape;
   int start_axis;
   int stop_axis;
+};
+
+struct TileParam : ParamBase {
+  lite::Tensor* X{};
+  lite::Tensor* Out{};
+  std::vector<int> repeat_times{};
 };
 
 }  // namespace operators
