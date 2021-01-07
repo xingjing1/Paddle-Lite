@@ -2047,9 +2047,11 @@ struct FlattenContiguousRangeParam : ParamBase {
 };
 
 struct TileParam : ParamBase {
-  const lite::Tensor* X{};
+  lite::Tensor* X{};
   lite::Tensor* Out{};
   std::vector<int> repeat_times{};
+  const lite::Tensor* RepeatTimes{};
+  const lite::Tensor* repeate_times_tensor{};
 };
 
 }  // namespace operators
