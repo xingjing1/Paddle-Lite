@@ -95,18 +95,9 @@ bool TileOp::InferShapeImpl() const {
 
 bool TileOp::AttachImpl(const cpp::OpDesc &opdesc, lite::Scope *scope) {
   AttachParam(&param_);
-  param_.X = scope->FindTensor(opdesc.Input("X").front());
-  param_.Out = scope->FindTensor(opdesc.Input("Out").front());
-  if (std::find(input_arg_names.begin(),
-                input_arg_names.end(),
-                "SectionsTensorList") != input_arg_names.end()) {
-    auto args = opdesc.Input("SectionsTensorList");
-    if (!args.empty()) {
-      auto *var = scope->FindVar(args.front());
-      param_.sections_tensor_list =
-          *(var->GetMutable<std::vector<lite::Tensor *>>());
-    }
-  }
+  param_.X = scope->FindMutableTensor(opdesc.Input("X").front());
+  param_.Out = scope->FindMutableTensor(opdesc.Input("Out").front());
+
   return true;
 }
 
