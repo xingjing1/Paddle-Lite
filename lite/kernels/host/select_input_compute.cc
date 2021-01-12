@@ -35,9 +35,7 @@ REGISTER_LITE_KERNEL(select_input,
                      kNCHW,
                      paddle::lite::kernels::host::SelectInputCompute,
                      def)
-    .BindInput("X", {LiteType::GetTensorTy(TARGET(kHost), PRECISION(kFloat))})
-    .BindInput("Mask",
-               {LiteType::GetTensorTy(TARGET(kHost), PRECISION(kFloat))})
-    .BindOutput("Out",
-                {LiteType::GetTensorTy(TARGET(kHost), PRECISION(kFloat))})
+    .BindInput("X", {LiteType::GetTensorTy(TARGET(kHost), PRECISION(kAny))})
+    .BindInput("Mask", {LiteType::GetTensorTy(TARGET(kHost), PRECISION(kAny))})
+    .BindOutput("Out", {LiteType::GetTensorTy(TARGET(kHost), PRECISION(kAny))})
     .Finalize();
