@@ -129,4 +129,4 @@ bool TileOp::AttachImpl(const cpp::OpDesc &opdesc, lite::Scope *scope) {
 }  // namespace lite
 }  // namespace paddle
 
-REGISTER_LITE_OP(Tile, paddle::lite::operators::TileOp);
+REGISTER_LITE_OP(tile, paddle::lite::operators::TileOp);
