@@ -56,19 +56,23 @@ bool TileOp::InferShapeImpl() const {
   } else {
     repeat_times = param_.repeat_times;
   }
-  auto &repeat_times = param_.repeat_times;
+  param_.repeat_times = repeat_times;
   if (repeat_times.size() == 0) {
     repeat_times = std::vector<int>(x_dims.size(), -1);
   }
+  CHECK_GE(x_dims.size(), 1)
+      << "The rank of the input 'x' for tile op "
+      << "must be positive integers, but the value received is "
+      << x_dims.size();
 
   CHECK_LE(x_dims.size(), 6)
       << "The rank of the input 'x' for tile op "
-      << "must not be greater than %d, but the value received is "
+      << "must not be greater than 6, but the value received is "
       << x_dims.size();
 
   CHECK_LE(repeat_times.size(), 6)
       << "The size of the shape of input 'repeat_times' for tile op "
-      << "must not be greater than %d, but the value received is "
+      << "must not be greater than 6, but the value received is "
       << repeat_times.size();
 
   CHECK_GE(repeat_times.size(), 1)
@@ -110,17 +114,18 @@ bool TileOp::InferShapeImpl() const {
 bool TileOp::AttachImpl(const cpp::OpDesc &opdesc, lite::Scope *scope) {
   AttachParam(&param_);
   param_.X = scope->FindMutableTensor(opdesc.Input("X").front());
-  if (opdesc.HasInput("RepeatTimes")) {
+  if (opdesc.HasInput("RepeatTimes") && !opdesc.Input("RepeatTimes").empty()) {
     param_.RepeatTimes = scope->FindTensor(opdesc.Input("RepeatTimes").front());
   }
-  if (opdesc.HasInput("repeat_times_tensor")) {
+  if (opdesc.HasInput("repeat_times_tensor") &&
+      !opdesc.Input("repeat_times_tensor").empty()) {
     param_.repeate_times_tensor =
         scope->FindTensor(opdesc.Input("repeat_times_tensor").front());
   }
   if (opdesc.HasAttr("repeat_times")) {
     param_.repeat_times = opdesc.GetAttr<std::vector<int>>("repeat_times");
   }
-  param_.Out = scope->FindMutableTensor(opdesc.Input("Out").front());
+  param_.Out = scope->FindMutableTensor(opdesc.Output("Out").front());
 
   return true;
 }
