@@ -18,6 +18,7 @@
 namespace paddle {
 namespace lite {
 namespace operators {
+
 inline lite_api::ActivationType GetActivationType(const std::string &type) {
   if (type == "sigmoid") {
     return lite_api::ActivationType::kSigmoid;
@@ -35,6 +36,7 @@ inline lite_api::ActivationType GetActivationType(const std::string &type) {
   LOG(FATAL) << "The input type is not supported: " << type;
   return lite_api::ActivationType::kIndentity;
 }
+
 bool LstmOp::CheckShape() const {
   CHECK_OR_FALSE(param_.Input);
   CHECK_OR_FALSE(param_.Weight);

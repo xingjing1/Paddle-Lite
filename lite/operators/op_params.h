@@ -2118,7 +2118,7 @@ struct TileParam : ParamBase {
   lite::Tensor* Out{};
   std::vector<int> repeat_times{};
   const lite::Tensor* RepeatTimes{};
-  const lite::Tensor* repeate_times_tensor{};
+  std::vector<lite::Tensor*> repeat_times_tensor{};
 };
 
 struct SelectInputParam : ParamBase {
@@ -2171,6 +2171,7 @@ struct StridedSliceParam : ParamBase {
   lite::Tensor* StartsTensor{nullptr};
   lite::Tensor* StridesTensor{nullptr};
 };
+
 }  // namespace operators
 }  // namespace lite
 }  // namespace paddle
