@@ -127,9 +127,22 @@ void Run(const std::vector<int64_t>& input_shape,
 
   auto predictor = lite_api::CreatePaddlePredictor(config);
 
+  std::vector<int64_t> input0_shape = {1, 2};
+  std::vector<int64_t> input2_shape = {1, 2};
+  auto input_tensor0 = predictor->GetInput(0);
+  auto input_tensor2 = predictor->GetInput(2);
+  input_tensor0->Resize(input0_shape);
+  input_tensor2->Resize(input2_shape);
+  auto input_data0 = input_tensor0->mutable_data<float>();
+  auto input_data2 = input_tensor2->mutable_data<float>();
+  for (int i = 0; i < 2; i++) {
+    input_data0[i] = 608;
+    input_data2[i] = 8;
+  }
   // set input
-  auto input_tensor = predictor->GetInput(0);
+  auto input_tensor = predictor->GetInput(1);
   input_tensor->Resize(input_shape);
+
   auto input_data = input_tensor->mutable_data<float>();
   int64_t input_num = ShapeProduction(input_shape);
   if (FLAGS_input_img_path.empty()) {
@@ -144,14 +157,15 @@ void Run(const std::vector<int64_t>& input_shape,
     for (int i = 0; i < input_num; i++) {
       fs >> input_data[i];
     }
-    // LOG(INFO) << "input data:" << input_data[0] << " " <<
-    // input_data[input_num-1];
+    LOG(INFO) << "input data:" << input_data[0] << " "
+              << input_data[input_num - 1];
   }
-
+  std::cout << "before run" << std::endl;
   // warmup
   for (int i = 0; i < FLAGS_warmup; ++i) {
     predictor->Run();
   }
+  std::cout << "after run" << std::endl;
 
   // run
   std::vector<float> perf_vct;
@@ -184,6 +198,7 @@ void Run(const std::vector<int64_t>& input_shape,
     auto out_tensor = predictor->GetOutput(0);
     auto* out_data = out_tensor->data<float>();
     int64_t output_num = ShapeProduction(out_tensor->shape());
+    std::cout << "output_num:" << output_num << std::endl;
     float max_value = out_data[0];
     int max_index = 0;
     for (int i = 0; i < output_num; i++) {
@@ -195,8 +210,9 @@ void Run(const std::vector<int64_t>& input_shape,
     LOG(INFO) << "max_value:" << max_value;
     LOG(INFO) << "max_index:" << max_index;
     LOG(INFO) << "output data[0:10]:";
-    for (int i = 0; i < 10; i++) {
-      LOG(INFO) << out_data[i];
+    std::cout << "max_value" << std::endl;
+    for (int i = 0; i < output_num; i++) {
+      std::cout << out_data[i] << std::endl;
     }
   }
 }
