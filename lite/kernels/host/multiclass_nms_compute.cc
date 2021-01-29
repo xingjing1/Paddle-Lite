@@ -381,6 +381,9 @@ void MulticlassNmsCompute::Run() {
     batch_starts.push_back(batch_starts.back() + num_nmsed_out);
   }
 
+  for (int i = 0; i < batch_starts.size(); i++) {
+    std::cout << "batch_starts:" << batch_starts[i] << std::endl;
+  }
   uint64_t num_kept = batch_starts.back();
   if (num_kept == 0) {
     if (return_index) {
@@ -439,6 +442,9 @@ void MulticlassNmsCompute::Run() {
     }
   }
 
+  for (int i = 0; i < batch_starts.size(); i++) {
+    std::cout << "batch_starts:" << batch_starts[i] << std::endl;
+  }
   if (return_rois_num) {
     auto* nms_rois_num = param.nms_rois_num;
     nms_rois_num->mutable_data<int>();
@@ -447,6 +453,9 @@ void MulticlassNmsCompute::Run() {
       num_data[i - 1] = batch_starts[i] - batch_starts[i - 1];
     }
     nms_rois_num->Resize({n});
+    for (int i = 0; i < 1; i++) {
+      std::cout << "num_data:" << num_data[0] << std::endl;
+    }
   }
 
   LoD lod;

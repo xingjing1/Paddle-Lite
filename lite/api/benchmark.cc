@@ -137,7 +137,7 @@ void Run(const std::vector<int64_t>& input_shape,
   auto input_data2 = input_tensor2->mutable_data<float>();
   for (int i = 0; i < 2; i++) {
     input_data0[i] = 608;
-    input_data2[i] = 8;
+    input_data2[i] = 1;
   }
   // set input
   auto input_tensor = predictor->GetInput(1);
@@ -196,9 +196,13 @@ void Run(const std::vector<int64_t>& input_shape,
 
   if (FLAGS_show_output) {
     auto out_tensor = predictor->GetOutput(0);
+    auto out_tensor1 = predictor->GetOutput(1);
     auto* out_data = out_tensor->data<float>();
+    auto* out_data1 = out_tensor1->data<int>();
     int64_t output_num = ShapeProduction(out_tensor->shape());
+    int64_t output_num1 = ShapeProduction(out_tensor1->shape());
     std::cout << "output_num:" << output_num << std::endl;
+    std::cout << "output_num1:" << output_num1 << std::endl;
     float max_value = out_data[0];
     int max_index = 0;
     for (int i = 0; i < output_num; i++) {
@@ -213,6 +217,10 @@ void Run(const std::vector<int64_t>& input_shape,
     std::cout << "max_value" << std::endl;
     for (int i = 0; i < output_num; i++) {
       std::cout << out_data[i] << std::endl;
+    }
+    std::cout << "---------" << std::endl;
+    for (int i = 0; i < output_num1; i++) {
+      std::cout << out_data1[i] << std::endl;
     }
   }
 }
