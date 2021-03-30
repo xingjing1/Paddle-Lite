@@ -189,6 +189,24 @@ void GemmLikeConv<PRECISION(kInt8), PRECISION(kFloat)>::Run() {
 #ifdef LITE_WITH_PROFILE
     kernel_func_name_ = "conv1x1s1_gemm_int8";
 #endif
+  } else if (iw == ih && iw == 56 && ic == 64) {
+    lite::arm::math::conv_3x3s1_im2col_gemm_int8(din,
+                                                 dout,
+                                                 bs,
+                                                 oc,
+                                                 oh,
+                                                 ow,
+                                                 ic,
+                                                 ih,
+                                                 iw,
+                                                 weights,
+                                                 bias,
+                                                 param,
+                                                 &ctx,
+                                                 w_scale_.data());
+#ifdef LITE_WITH_PROFILE
+    kernel_func_name_ = "conv_3x3s1_im2col_gemm_int8";
+#endif
   } else {
     lite::arm::math::conv_im2col_gemm_int8(din,
                                            dout,
@@ -262,6 +280,24 @@ void GemmLikeConv<PRECISION(kInt8), PRECISION(kInt8)>::Run() {
                                          w_scale_.data());
 #ifdef LITE_WITH_PROFILE
     kernel_func_name_ = "conv1x1s1_gemm_int8";
+#endif
+  } else if (iw == ih && iw == 56 && ic == 64) {
+    lite::arm::math::conv_3x3s1_im2col_gemm_int8(din,
+                                                 dout,
+                                                 bs,
+                                                 oc,
+                                                 oh,
+                                                 ow,
+                                                 ic,
+                                                 ih,
+                                                 iw,
+                                                 weights,
+                                                 bias,
+                                                 param,
+                                                 &ctx,
+                                                 w_scale_.data());
+#ifdef LITE_WITH_PROFILE
+    kernel_func_name_ = "conv_3x3s1_im2col_gemm_int8";
 #endif
   } else {
     lite::arm::math::conv_im2col_gemm_int8(din,

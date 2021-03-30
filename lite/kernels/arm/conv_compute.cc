@@ -121,7 +121,8 @@ void ConvCompute<PRECISION(kInt8), PRECISION(kFloat)>::PrepareForRun() {
     // VLOG(3) << "Run DirectConv Int8";
   } else if (param.groups == 1 && kw == 3 && sw == 1 && no_dilation &&
              pads_equal) {
-    impl_ = new WinogradConv<PRECISION(kInt8), PRECISION(kFloat)>;
+    // impl_ = new WinogradConv<PRECISION(kInt8), PRECISION(kFloat)>;
+    impl_ = new GemmLikeConv<PRECISION(kInt8), PRECISION(kFloat)>;
     // VLOG(3) << "Run WinogradConv Int8";
   } else {
     impl_ = new GemmLikeConv<PRECISION(kInt8), PRECISION(kFloat)>;
@@ -172,7 +173,8 @@ void ConvCompute<PRECISION(kInt8), PRECISION(kInt8)>::PrepareForRun() {
     // VLOG(3) << "Run DirectConv Int8";
   } else if (param.groups == 1 && kw == 3 && sw == 1 && no_dilation &&
              pads_equal) {
-    impl_ = new WinogradConv<PRECISION(kInt8), PRECISION(kInt8)>;
+    impl_ = new GemmLikeConv<PRECISION(kInt8), PRECISION(kInt8)>;
+    // impl_ = new WinogradConv<PRECISION(kInt8), PRECISION(kInt8)>;
     // VLOG(3) << "Run WinogradConv Int8";
   } else {
     impl_ = new GemmLikeConv<PRECISION(kInt8), PRECISION(kInt8)>;

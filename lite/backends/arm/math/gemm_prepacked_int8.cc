@@ -3862,8 +3862,9 @@ void gemm_prepack_sdot_int8(const int8_t* A_packed,
   size_t llc_size = ctx->llc_size() / 4;
   auto workspace = ctx->workspace_data<int8_t>();
   //! MBLOCK_INT8_DOT * x (result) + MBLOCK_INT8_DOT * k (A) + x * k (B) = l2
-  int x_block = (llc_size - (MBLOCK_INT8_DOT * K)) /
-                (sizeof(int8_t) * (K + MBLOCK_INT8_DOT));
+  int x_block = ((llc_size - (MBLOCK_INT8_DOT * K)) /
+                 (sizeof(int8_t) * (K + MBLOCK_INT8_DOT)));
+  std::cout << "x_block_before:" << x_block << std::endl;
   x_block /= NBLOCK_INT8_DOT;
   x_block *= NBLOCK_INT8_DOT;
   int x_num = (N + (x_block - 1)) / x_block;
@@ -3871,6 +3872,8 @@ void gemm_prepack_sdot_int8(const int8_t* A_packed,
   x_block = (x_block + NBLOCK_INT8_DOT - 1) / NBLOCK_INT8_DOT;
   x_block *= NBLOCK_INT8_DOT;
   x_block = x_block < NBLOCK_INT8_DOT ? NBLOCK_INT8_DOT : x_block;
+  std::cout << "x_block_after:" << x_block << std::endl;
+  std::cout << "N:" << N << std::endl;
 
   int kup = ROUNDUP(K, KBLOCK_INT8);
   // unroll 2 loop
@@ -5266,6 +5269,100 @@ void gemm_prepack_vsdot_int8(const int8_t* A_packed,
 }
 #endif
 #endif  // dotprod  //NOLINT
+
+template <>
+void gemm_int8_im2col(const int8_t* A_packed,
+                      const int8_t* B,
+                      const float* bias,
+                      float32_t* C,
+                      int M,
+                      int N,
+                      int K,
+                      bool is_bias,
+                      bool is_transB,
+                      const float* scale,
+                      const operators::ActivationParam act_param,
+                      ARMContext* ctx,
+                      int i,
+                      int j,
+                      int m_idx) {
+  int tail = 0;
+  int flag_act = 0x00;  // relu: 1, relu6: 2, leakey: 3
+  float32_t* c_ptr0 = C + m_idx * M * N + i * N + j;
+  float32_t* c_ptr1 = c_ptr0 + N;
+  float32_t* c_ptr2 = c_ptr1 + N;
+  float32_t* c_ptr3 = c_ptr2 + N;
+  float32_t* c_ptr4 = c_ptr3 + N;
+  float32_t* c_ptr5 = c_ptr4 + N;
+  float32_t* c_ptr6 = c_ptr5 + N;
+  float32_t* c_ptr7 = c_ptr6 + N;
+  const float bias_local[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  const float scale_local[8] = {1, 1, 1, 1, 1, 1, 1, 1};
+  const float alpha[4] = {0.f, 0.f, 0.f, 0.f};
+  gemm_sdot_int8_kernel<float32_t>(A_packed,
+                                   B,
+                                   bias_local,
+                                   c_ptr0,
+                                   c_ptr1,
+                                   c_ptr2,
+                                   c_ptr3,
+                                   c_ptr4,
+                                   c_ptr5,
+                                   c_ptr6,
+                                   c_ptr7,
+                                   scale_local,
+                                   alpha,
+                                   flag_act,
+                                   K,
+                                   tail);
+}
+
+template <>
+void gemm_int8_im2col(const int8_t* A_packed,
+                      const int8_t* B,
+                      const float* bias,
+                      int8_t* C,
+                      int M,
+                      int N,
+                      int K,
+                      bool is_bias,
+                      bool is_transB,
+                      const float* scale,
+                      const operators::ActivationParam act_param,
+                      ARMContext* ctx,
+                      int i,
+                      int j,
+                      int m_idx) {
+  int tail = 0;
+  int flag_act = 0x00;  // relu: 1, relu6: 2, leakey: 3
+  int8_t* c_ptr0 = C + m_idx * M * N + i * N + j;
+  int8_t* c_ptr1 = c_ptr0 + N;
+  int8_t* c_ptr2 = c_ptr1 + N;
+  int8_t* c_ptr3 = c_ptr2 + N;
+  int8_t* c_ptr4 = c_ptr3 + N;
+  int8_t* c_ptr5 = c_ptr4 + N;
+  int8_t* c_ptr6 = c_ptr5 + N;
+  int8_t* c_ptr7 = c_ptr6 + N;
+  const float bias_local[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+  const float scale_local[8] = {1, 1, 1, 1, 1, 1, 1, 1};
+  const float alpha[4] = {0.f, 0.f, 0.f, 0.f};
+  gemm_sdot_int8_kernel<int8_t>(A_packed,
+                                B,
+                                bias_local,
+                                c_ptr0,
+                                c_ptr1,
+                                c_ptr2,
+                                c_ptr3,
+                                c_ptr4,
+                                c_ptr5,
+                                c_ptr6,
+                                c_ptr7,
+                                scale_local,
+                                alpha,
+                                flag_act,
+                                K,
+                                tail);
+}
 
 template <>
 void gemm_prepack_int8(const int8_t* A_packed,

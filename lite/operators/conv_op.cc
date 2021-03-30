@@ -31,6 +31,7 @@ bool ConvOpLite::CheckShape() const {
   const auto filter_dims = param_.filter->dims();
 
   CHECK_OR_FALSE(in_dims.size() == 4 || in_dims.size() == 5);
+  std::cout << "in_dims.sizze():" << in_dims.size() << std::endl;
 
   CHECK_EQ_OR_FALSE(in_dims.size(), filter_dims.size());
   CHECK_OR_FALSE(in_dims.size() - param_.strides.size() == 2U);

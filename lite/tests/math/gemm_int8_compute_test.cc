@@ -347,6 +347,49 @@ TEST(TestLiteGemmInt8, gemm_prepacked_int8) {
 #ifdef LITE_WITH_ARM
     paddle::lite::DeviceInfo::Init();
 #endif
+    for (auto& m : {512}) {
+      for (auto& n : {512}) {
+        for (auto& k : {512}) {
+          for (auto& tra : {false}) {
+            for (auto& trb : {false}) {
+              for (auto& has_bias : {false}) {
+                for (auto& relu_type : {0}) {
+                  for (auto& th : {1}) {
+                    auto flag = test_gemm_int8(tra,
+                                               trb,
+                                               m,
+                                               n,
+                                               k,
+                                               has_bias,
+                                               relu_type,
+                                               FLAGS_power_mode,
+                                               th);
+                    if (flag) {
+                      LOG(INFO) << "test m = " << m << ", n=" << n
+                                << ", k=" << k
+                                << ", bias: " << (has_bias ? "true" : "false")
+                                << ", relu: " << relu_type
+                                << ", trans A: " << (tra ? "true" : "false")
+                                << ", trans B: " << (trb ? "true" : "false")
+                                << " passed\n";
+                    } else {
+                      LOG(FATAL) << "test m = " << m << ", n=" << n
+                                 << ", k=" << k
+                                 << ", bias: " << (has_bias ? "true" : "false")
+                                 << ", relu: " << relu_type
+                                 << ", trans A: " << (tra ? "true" : "false")
+                                 << ", trans B: " << (trb ? "true" : "false")
+                                 << " failed\n";
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    /*
     for (auto& m : {1, 3, 8, 32, 33, 34, 35, 38, 41, 397}) {
       for (auto& n : {1, 3, 13, 141, 512, 789}) {
         for (auto& k : {1, 3, 8, 59, 60, 61, 62, 66, 67, 71}) {
@@ -389,6 +432,7 @@ TEST(TestLiteGemmInt8, gemm_prepacked_int8) {
         }
       }
     }
+    */
   }
 }
 

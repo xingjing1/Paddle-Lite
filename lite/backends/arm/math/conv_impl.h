@@ -199,6 +199,22 @@ void conv_im2col_gemm_int8(const int8_t* din,
                            ARMContext* ctx,
                            const float* scale);
 
+template <typename Dtype>
+void conv_3x3s1_im2col_gemm_int8(const int8_t* din,
+                                 Dtype* dout,
+                                 int num,
+                                 int chout,
+                                 int hout,
+                                 int wout,
+                                 int chin,
+                                 int hin,
+                                 int win,
+                                 const int8_t* weights,
+                                 const float* bias,
+                                 const operators::ConvParam& param,
+                                 ARMContext* ctx,
+                                 const float* scale);
+
 /// depthwise conv
 void conv_depthwise_3x3_fp32(const void* din,
                              void* dout,
@@ -484,6 +500,23 @@ void im2col_s2(const Dtype* data_im,
                int dilation_h,
                int dilation_w,
                Dtype* data_col);
+
+void im2col_tile(const int8_t* data_im,
+                 int channels,
+                 int height,
+                 int width,
+                 int kernel_h,
+                 int kernel_w,
+                 int pad_top,
+                 int pad_bottom,
+                 int pad_left,
+                 int pad_right,
+                 int stride_h,
+                 int stride_w,
+                 int dilation_h,
+                 int dilation_w,
+                 int8_t* data_col);
+
 }  // namespace math
 }  // namespace arm
 }  // namespace lite
