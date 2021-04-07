@@ -53,6 +53,8 @@ inline void fast_free(void* ptr) {
     free(static_cast<void**>(ptr)[-1]);
   }
 }
+
+template <typename T>
 void density_prior_box(const lite::Tensor* input,
                        const lite::Tensor* image,
                        lite::Tensor* boxes,
@@ -81,8 +83,8 @@ void density_prior_box(const lite::Tensor* input,
   boxes->Resize(shape_out);
   variances->Resize(shape_out);
 
-  float* _cpu_data = boxes->mutable_data<float>();
-  float* _variance_data = variances->mutable_data<float>();
+  T* _cpu_data = boxes->mutable_data<T>();
+  T* _variance_data = variances->mutable_data<T>();
 
   const int width = win1;
   const int height = hin1;
@@ -240,13 +242,12 @@ void density_prior_box(const lite::Tensor* input,
           }
         }
       } else {
-        float* min_buf = reinterpret_cast<float*>(
-            TargetWrapper<TARGET(kHost)>::Malloc(sizeof(float) * 4));
-        float* max_buf = reinterpret_cast<float*>(
-            TargetWrapper<TARGET(kHost)>::Malloc(sizeof(float) * 4));
-        float* com_buf =
-            reinterpret_cast<float*>(TargetWrapper<TARGET(kHost)>::Malloc(
-                sizeof(float) * aspect_ratio_.size() * 4));
+        T* min_buf = reinterpret_cast<T*>(
+            TargetWrapper<TARGET(kHost)>::Malloc(sizeof(T) * 4));
+        T* max_buf = reinterpret_cast<T*>(
+            TargetWrapper<TARGET(kHost)>::Malloc(sizeof(T) * 4));
+        T* com_buf = reinterpret_cast<T*>(TargetWrapper<TARGET(kHost)>::Malloc(
+            sizeof(T) * aspect_ratio_.size() * 4));
         for (int s = 0; s < min_size_.size(); ++s) {
           int min_idx = 0;
           int max_idx = 0;
@@ -295,18 +296,18 @@ void density_prior_box(const lite::Tensor* input,
             com_buf[com_idx++] = (center_y + box_height / 2.f) / img_height;
           }
           if (min_max_aspect_ratios_order) {
-            memcpy(_cpu_data + idx, min_buf, sizeof(float) * min_idx);
+            memcpy(_cpu_data + idx, min_buf, sizeof(T) * min_idx);
             idx += min_idx;
-            memcpy(_cpu_data + idx, max_buf, sizeof(float) * max_idx);
+            memcpy(_cpu_data + idx, max_buf, sizeof(T) * max_idx);
             idx += max_idx;
-            memcpy(_cpu_data + idx, com_buf, sizeof(float) * com_idx);
+            memcpy(_cpu_data + idx, com_buf, sizeof(T) * com_idx);
             idx += com_idx;
           } else {
-            memcpy(_cpu_data + idx, min_buf, sizeof(float) * min_idx);
+            memcpy(_cpu_data + idx, min_buf, sizeof(T) * min_idx);
             idx += min_idx;
-            memcpy(_cpu_data + idx, com_buf, sizeof(float) * com_idx);
+            memcpy(_cpu_data + idx, com_buf, sizeof(T) * com_idx);
             idx += com_idx;
-            memcpy(_cpu_data + idx, max_buf, sizeof(float) * max_idx);
+            memcpy(_cpu_data + idx, max_buf, sizeof(T) * max_idx);
             idx += max_idx;
           }
         }
@@ -319,7 +320,7 @@ void density_prior_box(const lite::Tensor* input,
   //! clip the prior's coordinate such that it is within [0, 1]
   if (is_clip_) {
     for (int d = 0; d < channel_size; ++d) {
-      _cpu_data[d] = std::min(std::max(_cpu_data[d], 0.f), 1.f);
+      _cpu_data[d] = std::min(std::max(_cpu_data[d], (T)0.f), (T)1.f);
     }
   }
   //! set the variance.
@@ -336,7 +337,10 @@ void density_prior_box(const lite::Tensor* input,
   }
 }
 
-void PriorBoxCompute::ReInitWhenNeeded() {
+#ifdef ENABLE_ARM_FP16
+
+template <>
+void PriorBoxCompute<PRECISION(kFP16), PRECISION(kFP16)>::ReInitWhenNeeded() {
   auto& param = this->template Param<param_t>();
   auto input_dims = param.input->dims();
   auto image_dims = param.image->dims();
@@ -360,32 +364,92 @@ void PriorBoxCompute::ReInitWhenNeeded() {
   prior_num += max_size.size();
   std::vector<std::string> order = param.order;
   bool min_max_aspect_ratios_order = param.min_max_aspect_ratios_order;
-  density_prior_box(param.input,
-                    param.image,
-                    &boxes_tmp_,
-                    &variances_tmp_,
-                    min_size,
-                    std::vector<float>(),
-                    std::vector<float>(),
-                    std::vector<int>(),
-                    max_size,
-                    aspect_ratios_vec,
-                    variance,
-                    img_w,
-                    img_h,
-                    step_w,
-                    step_h,
-                    offset,
-                    prior_num,
-                    is_flip,
-                    is_clip,
-                    order,
-                    min_max_aspect_ratios_order);
+  density_prior_box<float16_t>(param.input,
+                               param.image,
+                               &boxes_tmp_,
+                               &variances_tmp_,
+                               min_size,
+                               std::vector<float>(),
+                               std::vector<float>(),
+                               std::vector<int>(),
+                               max_size,
+                               aspect_ratios_vec,
+                               variance,
+                               img_w,
+                               img_h,
+                               step_w,
+                               step_h,
+                               offset,
+                               prior_num,
+                               is_flip,
+                               is_clip,
+                               order,
+                               min_max_aspect_ratios_order);
   last_input_shape_ = input_dims;
   last_image_shape_ = image_dims;
 }
 
-void PriorBoxCompute::Run() {
+template <>
+void PriorBoxCompute<PRECISION(kFP16), PRECISION(kFP16)>::Run() {
+  auto& param = this->template Param<param_t>();
+  param.boxes->CopyDataFrom(boxes_tmp_);
+  param.variances->CopyDataFrom(variances_tmp_);
+}
+
+#endif
+
+template <>
+void PriorBoxCompute<PRECISION(kFloat), PRECISION(kFloat)>::ReInitWhenNeeded() {
+  auto& param = this->template Param<param_t>();
+  auto input_dims = param.input->dims();
+  auto image_dims = param.image->dims();
+  if (last_input_shape_ == input_dims && last_image_shape_ == image_dims) {
+    return;
+  }
+  bool is_flip = param.flip;
+  bool is_clip = param.clip;
+  std::vector<float> min_size = param.min_sizes;
+  std::vector<float> max_size = param.max_sizes;
+  std::vector<float> aspect_ratio = param.aspect_ratios;
+  std::vector<float> variance = param.variances_;
+  int img_w = param.img_w;
+  int img_h = param.img_h;
+  float step_w = param.step_w;
+  float step_h = param.step_h;
+  float offset = param.offset;
+  std::vector<float> aspect_ratios_vec;
+  ExpandAspectRatios(aspect_ratio, is_flip, &aspect_ratios_vec);
+  size_t prior_num = aspect_ratios_vec.size() * min_size.size();
+  prior_num += max_size.size();
+  std::vector<std::string> order = param.order;
+  bool min_max_aspect_ratios_order = param.min_max_aspect_ratios_order;
+  density_prior_box<float>(param.input,
+                           param.image,
+                           &boxes_tmp_,
+                           &variances_tmp_,
+                           min_size,
+                           std::vector<float>(),
+                           std::vector<float>(),
+                           std::vector<int>(),
+                           max_size,
+                           aspect_ratios_vec,
+                           variance,
+                           img_w,
+                           img_h,
+                           step_w,
+                           step_h,
+                           offset,
+                           prior_num,
+                           is_flip,
+                           is_clip,
+                           order,
+                           min_max_aspect_ratios_order);
+  last_input_shape_ = input_dims;
+  last_image_shape_ = image_dims;
+}
+
+template <>
+void PriorBoxCompute<PRECISION(kFloat), PRECISION(kFloat)>::Run() {
   auto& param = this->template Param<param_t>();
   param.boxes->CopyDataFrom(boxes_tmp_);
   param.variances->CopyDataFrom(variances_tmp_);
@@ -396,12 +460,24 @@ void PriorBoxCompute::Run() {
 }  // namespace lite
 }  // namespace paddle
 
-REGISTER_LITE_KERNEL(prior_box,
-                     kARM,
-                     kFloat,
-                     kNCHW,
-                     paddle::lite::kernels::arm::PriorBoxCompute,
-                     def)
+#ifdef ENABLE_ARM_FP16
+typedef paddle::lite::kernels::arm::PriorBoxCompute<PRECISION(kFP16),
+                                                    PRECISION(kFP16)>
+    PriorBoxFp16;
+REGISTER_LITE_KERNEL(prior_box, kARM, kFP16, kNCHW, PriorBoxFp16, def)
+    .BindInput("Input", {LiteType::GetTensorTy(TARGET(kARM), PRECISION(kFP16))})
+    .BindInput("Image", {LiteType::GetTensorTy(TARGET(kARM), PRECISION(kFP16))})
+    .BindOutput("Boxes",
+                {LiteType::GetTensorTy(TARGET(kARM), PRECISION(kFP16))})
+    .BindOutput("Variances",
+                {LiteType::GetTensorTy(TARGET(kARM), PRECISION(kFP16))})
+    .Finalize();
+
+#endif  // ENABLE_ARM_FP16
+typedef paddle::lite::kernels::arm::PriorBoxCompute<PRECISION(kFloat),
+                                                    PRECISION(kFloat)>
+    PriorBoxFp32;
+REGISTER_LITE_KERNEL(prior_box, kARM, kFloat, kNCHW, PriorBoxFp32, def)
     .BindInput("Input", {LiteType::GetTensorTy(TARGET(kARM))})
     .BindInput("Image", {LiteType::GetTensorTy(TARGET(kARM))})
     .BindOutput("Boxes", {LiteType::GetTensorTy(TARGET(kARM))})

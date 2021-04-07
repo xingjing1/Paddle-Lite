@@ -17,6 +17,7 @@
 #include "lite/api/paddle_use_ops.h"
 #include "lite/core/arena/framework.h"
 #include "lite/core/tensor.h"
+#include "lite/tests/utils/fill_data.h"
 
 namespace paddle {
 namespace lite {
@@ -68,6 +69,7 @@ inline void ExpandAspectRatios(const std::vector<float>& input_aspect_ratior,
   }
 }
 
+template <class T = float>
 void prior_box_compute_ref(const lite::Tensor* input,
                            const lite::Tensor* image,
                            lite::Tensor** boxes,
@@ -94,8 +96,8 @@ void prior_box_compute_ref(const lite::Tensor* input,
   (*boxes)->Resize(out_sh);
   (*variances)->Resize(out_sh);
 
-  float* _cpu_data = (*boxes)->mutable_data<float>();
-  float* _variance_data = (*variances)->mutable_data<float>();
+  T* _cpu_data = (*boxes)->mutable_data<T>();
+  T* _variance_data = (*variances)->mutable_data<T>();
 
   const int width = input->dims()[3];
   const int height = input->dims()[2];
@@ -251,12 +253,10 @@ void prior_box_compute_ref(const lite::Tensor* input,
           }
         }
       } else {
-        float* min_buf =
-            reinterpret_cast<float*>(fast_malloc(sizeof(float) * 4));
-        float* max_buf =
-            reinterpret_cast<float*>(fast_malloc(sizeof(float) * 4));
-        float* com_buf = reinterpret_cast<float*>(
-            fast_malloc(sizeof(float) * aspect_ratio_.size() * 4));
+        T* min_buf = reinterpret_cast<T*>(fast_malloc(sizeof(T) * 4));
+        T* max_buf = reinterpret_cast<T*>(fast_malloc(sizeof(T) * 4));
+        T* com_buf = reinterpret_cast<T*>(
+            fast_malloc(sizeof(T) * aspect_ratio_.size() * 4));
 
         for (int s = 0; s < min_size_.size(); ++s) {
           int min_idx = 0;
@@ -305,11 +305,11 @@ void prior_box_compute_ref(const lite::Tensor* input,
             //! ymax
             com_buf[com_idx++] = (center_y + box_height / 2.f) / img_height;
           }
-          memcpy(_cpu_data + idx, min_buf, sizeof(float) * min_idx);
+          memcpy(_cpu_data + idx, min_buf, sizeof(T) * min_idx);
           idx += min_idx;
-          memcpy(_cpu_data + idx, com_buf, sizeof(float) * com_idx);
+          memcpy(_cpu_data + idx, com_buf, sizeof(T) * com_idx);
           idx += com_idx;
-          memcpy(_cpu_data + idx, max_buf, sizeof(float) * max_idx);
+          memcpy(_cpu_data + idx, max_buf, sizeof(T) * max_idx);
           idx += max_idx;
         }
         fast_free(min_buf);
@@ -322,7 +322,7 @@ void prior_box_compute_ref(const lite::Tensor* input,
   //! clip the prior's coordinate such that it is within [0, 1]
   if (is_clip_) {
     for (int d = 0; d < channel_size; ++d) {
-      _cpu_data[d] = std::min(std::max(_cpu_data[d], 0.f), 1.f);
+      _cpu_data[d] = std::min(std::max(_cpu_data[d], (T)0.f), (T)1.f);
     }
   }
   //! set the variance.
@@ -482,6 +482,7 @@ class DensityPriorBoxComputeTester : public arena::TestCase {
   }
 };
 
+template <class T = float>
 class PriorBoxComputeTester : public arena::TestCase {
  protected:
   // common attributes for this op.
@@ -598,8 +599,8 @@ class PriorBoxComputeTester : public arena::TestCase {
   }
 
   void PrepareData() override {
-    std::vector<float> feature_data(feature_dims_.production());
-    std::vector<float> image_data(data_dims_.production());
+    std::vector<T> feature_data(feature_dims_.production());
+    std::vector<T> image_data(data_dims_.production());
 
     for (int i = 0; i < feature_dims_.production(); ++i) {
       feature_data[i] = i * 1.1 / feature_dims_.production();
@@ -680,6 +681,7 @@ void test_density_prior_box(Place place) {
   arena.TestPrecision();
 }
 
+template <class T = float>
 void test_prior_box(Place place) {
   std::vector<float> min_size{60.f};
   std::vector<float> max_size;
@@ -706,23 +708,23 @@ void test_prior_box(Place place) {
   int h_fea = 19;
   int c_fea = 128;
   std::unique_ptr<arena::TestCase> tester(
-      new PriorBoxComputeTester(place,
-                                "def",
-                                flip,
-                                clip,
-                                min_size,
-                                max_size,
-                                aspect_ratios_vec,
-                                variance,
-                                img_w,
-                                img_h,
-                                step_w,
-                                step_h,
-                                offset,
-                                prior_num,
-                                order,
-                                DDim({num, c_fea, h_fea, w_fea}),
-                                DDim({num, channel, height, width})));
+      new PriorBoxComputeTester<T>(place,
+                                   "def",
+                                   flip,
+                                   clip,
+                                   min_size,
+                                   max_size,
+                                   aspect_ratios_vec,
+                                   variance,
+                                   img_w,
+                                   img_h,
+                                   step_w,
+                                   step_h,
+                                   offset,
+                                   prior_num,
+                                   order,
+                                   DDim({num, c_fea, h_fea, w_fea}),
+                                   DDim({num, channel, height, width})));
   arena::Arena arena(std::move(tester), place, 2e-5);
   arena.TestPrecision();
 }
@@ -747,6 +749,19 @@ TEST(DensityPriorBox, precision) {
   test_density_prior_box(place);
 #endif
 }
+
+#if defined(LITE_WITH_ARM) && defined(ENABLE_ARM_FP16)
+TEST(PriorBoxFp16, precision) {
+#ifdef LITE_WITH_X86
+  Place place(TARGET(kX86));
+#endif
+#ifdef LITE_WITH_ARM
+  Place place(TARGET(kARM));
+  test_prior_box<float16_t>(place);
+#endif
+}
+
+#endif
 
 }  // namespace lite
 }  // namespace paddle
