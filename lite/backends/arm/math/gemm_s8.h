@@ -39,6 +39,20 @@ void gemm_s8(bool is_transA,
              const operators::ActivationParam act_param,
              ARMContext* ctx);
 
+void gemm_s8_n_scale_bias(bool is_transA,
+                          bool is_transB,
+                          int M,
+                          int N,
+                          int K,
+                          const int8_t* A,
+                          const int8_t* B,
+                          float* C,
+                          const float* bias,
+                          bool is_bias,
+                          const float* scale,
+                          const operators::ActivationParam act_param,
+                          ARMContext* ctx);
+
 }  // namespace math
 }  // namespace arm
 }  // namespace lite

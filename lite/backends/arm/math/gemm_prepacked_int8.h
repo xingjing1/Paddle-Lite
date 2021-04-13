@@ -85,6 +85,19 @@ void prepackA_int8(TensorLite* tout,
                    bool is_trans,
                    ARMContext* ctx);
 
+void gemm_prepack_int8_n_scale_bias(const int8_t* A_packed,
+                                    const int8_t* B,
+                                    const float* bias,
+                                    float* C,
+                                    int M,
+                                    int N,
+                                    int K,
+                                    bool is_bias,
+                                    bool is_transB,
+                                    const float* scale,
+                                    const operators::ActivationParam act_param,
+                                    ARMContext* ctx);
+
 template <typename dtype>
 void gemm_prepack_int8(const int8_t* A_packed,
                        const int8_t* B,

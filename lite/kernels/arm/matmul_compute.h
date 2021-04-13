@@ -22,7 +22,8 @@ namespace lite {
 namespace kernels {
 namespace arm {
 
-class MatMulCompute : public KernelLite<TARGET(kARM), PRECISION(kFloat)> {
+template <PrecisionType PType, PrecisionType OutType>
+class MatMulCompute : public KernelLite<TARGET(kARM), PType> {
  public:
   using param_t = operators::MatMulParam;
 
