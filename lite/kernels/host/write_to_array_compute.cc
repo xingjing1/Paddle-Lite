@@ -24,10 +24,19 @@ void WriteToArrayCompute::Run() {
   CHECK_EQ(param.I->numel(), 1) << "input2 should have only one element";
 
   int id = param.I->data<int64_t>()[0];
+  // int id = param.Out->size();
   if (param.Out->size() < id + 1) {
     param.Out->resize(id + 1);
   }
   param.Out->at(id).CopyDataFrom(*param.X);
+  /*
+  for(int i = 0; i< param.X->numel(); i++){
+  LOG(INFO)<<param.X->data<int64_t>()[i];
+  LOG(INFO)<<param.X->data<float>()[i];
+  }
+  */
+  // my_print(std::string name, T* ptr, const paddle::lite::DDim& dims,
+  // paddle::lite::LoD lod = {{}}) {
 }
 
 }  // namespace host
