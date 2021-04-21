@@ -183,7 +183,7 @@ RuntimeProgram::RuntimeProgram(
     auto op_desc = block_desc->GetOp<cpp::OpDesc>(op_idx);
     CHECK(op_desc);
     std::string op_type = op_desc->Type();
-    std::cout << "op_type:" << op_type << std::endl;
+    // std::cout << "op_type:" << op_type << std::endl;
     // if (op_type == "feed" || op_type == "fetch") continue;
     // Create op and pick up the best kernel
     auto op = LiteOpRegistry::Global().Create(op_type);
@@ -206,21 +206,21 @@ RuntimeProgram::RuntimeProgram(
       std::string alias;
       Place place;
       KernelBase::ParseKernelType(kernel_type, &op_type, &alias, &place);
-      std::cout << "kernel_type:" << kernel_type << std::endl;
-      std::cout << "op_type:" << op_type << std::endl;
-      std::cout << "alias:" << alias << std::endl;
+      // std::cout << "kernel_type:" << kernel_type << std::endl;
+      // std::cout << "op_type:" << op_type << std::endl;
+      // std::cout << "alias:" << alias << std::endl;
       // std::cout<<"place:"<<place<<std::endl;
 
       VLOG(3) << "Found the attr '" << kKernelTypeAttr << "': " << kernel_type
               << " for " << op_type;
       auto kernels = op->CreateKernels({place});
       CHECK_GT(kernels.size(), 0) << "No kernels found for " << op_type;
-      std::cout << "kerels.begin:" << kernels[0]->alias() << std::endl;
+      // std::cout << "kerels.begin:" << kernels[0]->alias() << std::endl;
       auto it = std::find_if(
           kernels.begin(), kernels.end(), [&](std::unique_ptr<KernelBase>& it) {
             return it->alias() == alias;
           });
-      std::cout << "kernel.size():" << kernels.size() << std::endl;
+      // std::cout << "kernel.size():" << kernels.size() << std::endl;
       CHECK(it != kernels.end());
       kernel = std::move(*it);
     } else {
@@ -306,7 +306,7 @@ void RuntimeProgram::Run() {
       inst.Sync();
     }
 #endif
-    std::cout << "inst.kernel:" << inst.kernel()->op_type() << std::endl;
+    // std::cout << "inst.kernel:" << inst.kernel()->op_type() << std::endl;
     inst.Run();
 #ifdef LITE_WITH_PRECISION_PROFILE
 #ifndef LITE_WITH_FPGA

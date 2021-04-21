@@ -61,18 +61,18 @@ struct Item {
   }
 };
 
-// LoD ToAbsOffset(const LoD &in) {
-//  // the lowest level stores relative offsets
-//  if (in.empty() || in.size() == 1) return in;
-//  LoD result = in;
-//  for (auto level = static_cast<int>(in.size() - 2); level >= 0; level--) {
-//    for (size_t i = 0; i < in[level].size(); ++i) {
-//      size_t index = in[level][i];
-//      result[level][i] = result[level + 1][index];
-//    }
-//  }
-//  return result;
-//}
+LoD ToAbsOffset(const LoD &in) {
+  // the lowest level stores relative offsets
+  if (in.empty() || in.size() == 1) return in;
+  LoD result = in;
+  for (auto level = static_cast<int>(in.size() - 2); level >= 0; level--) {
+    for (size_t i = 0; i < in[level].size(); ++i) {
+      size_t index = in[level][i];
+      result[level][i] = result[level + 1][index];
+    }
+  }
+  return result;
+}
 
 /*
  * Prune the source sentences all branchs finished, and it is optional.
@@ -166,8 +166,8 @@ std::vector<std::vector<Item>> SelectTopBeamSizeItems(const Tensor *pre_ids,
   // find the current candidates
   // auto abs_lod = framework::ToAbsOffset(scores->lod());
   //  printl(scores->lod());
-  //  auto abs_lod = ToAbsOffset(scores->lod());
-  auto abs_lod = scores->lod();
+  auto abs_lod = ToAbsOffset(scores->lod());
+  // auto abs_lod = scores->lod();
   //  printl(abs_lod);
 
   auto *pre_ids_data = pre_ids->data<int64_t>();
@@ -228,12 +228,12 @@ void beam_search(const Tensor *pre_ids,
                  bool is_accumulated,
                  Context<TARGET(kARM)> *ctx) {
   // auto abs_lod = framework::ToAbsOffset(scores->lod());
-  auto abs_lod = scores->lod();
-  // auto abs_lod = ToAbsOffset(scores->lod());
+  // auto abs_lod = scores->lod();
+  auto abs_lod = ToAbsOffset(scores->lod());
 
   auto &high_level = abs_lod[level];
-  LOG(INFO) << "level:" << level << "  size:" << high_level.size();
-  LOG(INFO) << "high_level:" << high_level.back();
+  // LOG(INFO) << "level:" << level << "  size:" << high_level.size();
+  // LOG(INFO) << "high_level:" << high_level.back();
   auto items = SelectTopBeamSizeItems(pre_ids,
                                       pre_scores,
                                       ids,
@@ -268,13 +268,13 @@ void beam_search(const Tensor *pre_ids,
   size_t low_offset = 0;
   for (auto &items : selected_items) {
     low_level.push_back(low_offset);
-    LOG(INFO) << "  ================== ";
+    // LOG(INFO) << "  ================== ";
 
     for (auto &item : items) {
       if (parent_idx) {
         parent_idx_data[low_offset] = static_cast<int>(low_level.size() - 1);
       }
-      LOG(INFO) << item.ToString() << "  |  ";
+      // LOG(INFO) << item.ToString() << "  |  ";
 
       selected_ids_data[low_offset] = item.id;
       selected_scores_data[low_offset] = item.score;
@@ -282,7 +282,7 @@ void beam_search(const Tensor *pre_ids,
     }
   }
   for (size_t i = 0; i < low_level.size(); i++) {
-    std::cout << "-----------------" << low_level[i] << ",";
+    // std::cout << "-----------------" << low_level[i] << ",";
   }
   low_level.push_back(low_offset);
 
