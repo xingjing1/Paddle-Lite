@@ -28,6 +28,8 @@ void WhileCompute::PrepareForRun() {
 }
 void WhileCompute::Run() {
   auto &param = this->Param<param_t>();
+  //  LOG(INFO)<<"while_condition_bool"<<param.cond->data<bool>()[0];
+  //  LOG(INFO)<<"while_cancel"<<param.cancel->data<int32_t>()[0];
   while (param.cond->data<bool>()[0]) {
     program_->Run();
   }

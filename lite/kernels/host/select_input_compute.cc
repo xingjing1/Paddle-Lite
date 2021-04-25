@@ -21,7 +21,21 @@ namespace host {
 
 void SelectInputCompute::Run() {
   auto& param = this->Param<param_t>();
+
+  LOG(INFO) << "select input mask:" << *param.Mask->data<int>();
+  //    for(int j  = 0; j < param.X[0]->numel(); j++) {
+  // LOG(INFO) <<"select input input0:"<<param.X[0]->data<int>()[j];
+  //  }
+  // for(int j  = 0; j < param.X[1]->numel(); j++) {
+  //        LOG(INFO) <<"select input input1:"<<param.X[1]->data<int64_t>()[j];
+  // }
+
   param.Out->CopyDataFrom(*param.X[*param.Mask->data<int>()]);
+  for (int i = 0; i < param.Out->numel(); i++) {
+    // LOG(INFO) <<"select input out:" <<param.Out->data<int64_t>()[i];
+    // LOG(INFO) <<"select input out precision: "
+    // <<static_cast<int>(param.Out->precision());
+  }
 }
 
 }  // namespace host

@@ -85,6 +85,10 @@ void CompareCompute<PType, CompareFunctor>::Run() {
   bool *z = param.Out->template mutable_data<bool>();
   const auto *x = param.X->template data<DType>();
   const auto *y = param.Y->template data<DType>();
+
+  // LOG(INFO) <<"equal x:"<<*x;
+  // LOG(INFO) <<"equal y:"<<*y;
+
   if (x_size == y_size) {
     for (int i = 0; i < x_size; ++i) {
       z[i] = CompareFunctor()(x[i], y[i]);
@@ -108,6 +112,7 @@ void CompareCompute<PType, CompareFunctor>::Run() {
       }
     }
   }
+  LOG(INFO) << "equal z:" << *z;
 }
 
 }  // namespace host

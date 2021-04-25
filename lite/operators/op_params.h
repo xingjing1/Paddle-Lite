@@ -1126,6 +1126,7 @@ struct CompareParam : ParamBase {
 
 struct WhileParam : ParamBase {
   Tensor* cond{};
+  Tensor* cancel{};
   int block_idx{-1};
   std::shared_ptr<const cpp::ProgramDesc> program_desc{nullptr};
   Scope* exec_scope{nullptr};

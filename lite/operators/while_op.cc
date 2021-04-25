@@ -32,6 +32,9 @@ bool WhileOp::InferShapeImpl() const { return true; }
 bool WhileOp::AttachImpl(const cpp::OpDesc &op_desc, Scope *scope) {
   auto condition = op_desc.Input("Condition");
   param_.cond = scope->FindVar(condition[0])->GetMutable<lite::Tensor>();
+
+  auto cancel = op_desc.Input("X");
+  param_.cancel = scope->FindVar(cancel[70])->GetMutable<lite::Tensor>();
   CHECK(param_.program_desc);
   param_.block_idx = op_desc.GetAttr<int32_t>("sub_block");
   CHECK_GE(param_.block_idx, 0);

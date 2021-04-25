@@ -253,6 +253,16 @@ void BeamSearchDecodeCompute::Run() {
   // inputs
   auto ids = param.ids;
   auto scores = param.scores;
+  for (int i = 0; i < ids->size(); i++) {
+    for (int j = 0; j < (*ids)[i].numel(); j++) {
+      // LOG(INFO) <<"ids:"<<(*ids)[i].data<int64_t>()[j];
+    }
+  }
+  for (int i = 0; i < scores->size(); i++) {
+    for (int j = 0; j < (*scores)[i].numel(); j++) {
+      // LOG(INFO) <<"scores:"<<(*scores)[i].data<float>()[j];
+    }
+  }
   // outputs
   auto sentence_ids = param.sentence_ids;
   auto sentence_scores = param.sentence_scores;
@@ -280,6 +290,12 @@ void BeamSearchDecodeCompute::Run() {
   // when decode finish, we clear ids and scores
   param.ids->clear();
   param.scores->clear();
+  for (int j = 0; j < sentence_ids->numel(); j++) {
+    LOG(INFO) << "ids:" << sentence_ids->data<int64_t>()[j];
+  }
+  for (int j = 0; j < sentence_scores->numel(); j++) {
+    LOG(INFO) << "scores:" << sentence_scores->data<float>()[j];
+  }
 }
 
 }  // namespace arm

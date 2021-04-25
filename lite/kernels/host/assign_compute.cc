@@ -21,6 +21,9 @@ namespace host {
 
 void AssignCompute::Run() {
   auto& param = Param<param_t>();
+
+  // LOG(INFO)<<"assign in :"<<param.X;
+
   if (param.X != nullptr) {
     if (param.X == param.Out) {
       return;
@@ -38,6 +41,10 @@ void AssignCompute::Run() {
     }
   } else {
     LOG(FATAL) << "x or x_array of assign must be set.";
+  }
+  for (int i = 0; i < param.Out->numel(); i++) {
+    // LOG(INFO)<<"assign out :"<<param.Out->data<int64_t>()[i];
+    //  LOG(INFO)<<"assign out :"<<param.Out->data<float>()[i];
   }
 }
 
