@@ -22,7 +22,7 @@ namespace host {
 void SelectInputCompute::Run() {
   auto& param = this->Param<param_t>();
 
-  LOG(INFO) << "select input mask:" << *param.Mask->data<int>();
+  // LOG(INFO) << "select input mask:" << *param.Mask->data<int>();
   //    for(int j  = 0; j < param.X[0]->numel(); j++) {
   // LOG(INFO) <<"select input input0:"<<param.X[0]->data<int>()[j];
   //  }

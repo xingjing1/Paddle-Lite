@@ -291,10 +291,10 @@ void BeamSearchDecodeCompute::Run() {
   param.ids->clear();
   param.scores->clear();
   for (int j = 0; j < sentence_ids->numel(); j++) {
-    LOG(INFO) << "ids:" << sentence_ids->data<int64_t>()[j];
+    // LOG(INFO) << "ids:" << sentence_ids->data<int64_t>()[j];
   }
   for (int j = 0; j < sentence_scores->numel(); j++) {
-    LOG(INFO) << "scores:" << sentence_scores->data<float>()[j];
+    // LOG(INFO) << "scores:" << sentence_scores->data<float>()[j];
   }
 }
 

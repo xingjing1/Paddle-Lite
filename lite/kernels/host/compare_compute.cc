@@ -112,7 +112,7 @@ void CompareCompute<PType, CompareFunctor>::Run() {
       }
     }
   }
-  LOG(INFO) << "equal z:" << *z;
+  // LOG(INFO) << "equal z:" << *z;
 }
 
 }  // namespace host
