@@ -226,6 +226,10 @@ void FcCompute<PRECISION(kFloat), PRECISION(kFloat)>::Run() {
                              &ctx);
     }
   }
+  LOG(INFO) <<"fc:";
+  for (int i = 0; i < 100; i++) {
+    LOG(INFO) <<"fc:"<<o_data[i];
+  }
 }
 
 template <>
@@ -283,6 +287,10 @@ void FcCompute<PRECISION(kInt8), PRECISION(kFloat)>::Run() {
                                  act_param,
                                  &ctx);
     }
+  }
+  LOG(INFO) <<"fc:";
+  for (int i = 0; i < 100; i++) {
+    LOG(INFO) <<"fc:"<<o_data[i];
   }
 }
 

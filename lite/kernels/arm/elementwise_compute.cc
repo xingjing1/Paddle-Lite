@@ -259,6 +259,10 @@ void elementwise_compute_template(paddle::lite::KernelBase* kernel,
   if (!elementwise_fn && !fast_bcast_fn) {
     LOG(FATAL) << "unsupported elementwise_compute called";
   }
+  LOG(INFO) <<"out_data:";
+  for (int i = 0; i < 100; i++) {
+    LOG(INFO) <<"out_data:"<<out_data[i];
+  }
 }
 
 template <typename T, PrecisionType PType>
