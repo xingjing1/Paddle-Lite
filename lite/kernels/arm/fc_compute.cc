@@ -238,6 +238,10 @@ void FcCompute<PRECISION(kInt8), PRECISION(kFloat)>::Run() {
   auto& ctx = this->ctx_->template As<ARMContext>();
 
   auto* i_data = param.input->data<int8_t>();
+  LOG(INFO) <<"fc:";
+  for (int i = 0; i < 100; i++) {
+    LOG(INFO) <<"fc in:"<<(float)i_data[i];
+  } 
   auto* o_data = param.output->mutable_data<float>();
   auto* w_data =
       flag_trans_weights_ ? weights_.data<int8_t>() : param.w->data<int8_t>();
@@ -290,7 +294,7 @@ void FcCompute<PRECISION(kInt8), PRECISION(kFloat)>::Run() {
   }
   LOG(INFO) <<"fc:";
   for (int i = 0; i < 100; i++) {
-    LOG(INFO) <<"fc:"<<o_data[i];
+    LOG(INFO) <<"fc out:"<<o_data[i];
   }
 }
 
