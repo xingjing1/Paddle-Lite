@@ -5454,6 +5454,18 @@ void packb_sdot_int8_n12_n8_n4(int8_t* out,
       const int8_t* inptr1 = inptr0 + ldin;
       const int8_t* inptr2 = inptr1 + ldin;
       const int8_t* inptr3 = inptr2 + ldin;
+      if (y + 4 > y_len) {
+        switch (y + 4 - y_len) {
+          case 3:
+            inptr1 = zerobuff;
+          case 2:
+            inptr2 = zerobuff;
+          case 1:
+            inptr3 = zerobuff;
+          default:
+            break;
+        }
+      }
       asm volatile(
       "ld1 {v0.8b}, [%[inptr0]] \n"
       "ld1 {v1.8b}, [%[inptr1]] \n"
@@ -5494,6 +5506,18 @@ void packb_sdot_int8_n12_n8_n4(int8_t* out,
       const int8_t* inptr1 = inptr0 + ldin;
       const int8_t* inptr2 = inptr1 + ldin;
       const int8_t* inptr3 = inptr2 + ldin;
+      if (y + 4 > y_len) {
+        switch (y + 4 - y_len) {
+          case 3:
+            inptr1 = zerobuff;
+          case 2:
+            inptr2 = zerobuff;
+          case 1:
+            inptr3 = zerobuff;
+          default:
+            break;
+        }
+      }
       asm volatile(
       "ld1 {v0.8b}, [%[inptr0]] \n"
       "ld1 {v1.8b}, [%[inptr1]] \n"
@@ -5533,6 +5557,18 @@ void packb_sdot_int8_n12_n8_n4(int8_t* out,
         const int8_t* inptr1 = inptr0 + ldin;
         const int8_t* inptr2 = inptr1 + ldin;
         const int8_t* inptr3 = inptr2 + ldin;
+        if (y + 4 > y_len) {
+          switch (y + 4 - y_len) {
+            case 3:
+              inptr1 = zerobuff;
+            case 2:
+              inptr2 = zerobuff;
+            case 1:
+              inptr3 = zerobuff;
+            default:
+              break;
+          }
+        }
         *out0++ = *inptr0++;
         *out0++ = *inptr1++;
         *out0++ = *inptr2++;
